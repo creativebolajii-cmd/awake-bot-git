@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "AwakeMovies Scraper"
+version = "1.0.0"
+id = "artifacts/awakemovies-scraper"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23088
+
+[services.development]
+run = "pnpm --filter @workspace/awakemovies-scraper run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/awakemovies-scraper", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/awakemovies-scraper/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23088"
+BASE_PATH = "/"

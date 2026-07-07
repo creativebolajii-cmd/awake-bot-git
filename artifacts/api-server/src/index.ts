@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { startTelegramBot } from "./telegram/bot";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,12 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Bug 1 fix: start Telegram bot only if token is set.
+  // Guard prevents the missing-token error from crashing the HTTP server.
+  if (process.env["TELEGRAM_BOT_TOKEN"]) {
+    startTelegramBot();
+  } else {
+    logger.warn("TELEGRAM_BOT_TOKEN not set — Telegram bot will not start");
+  }
 });

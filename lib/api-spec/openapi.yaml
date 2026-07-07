@@ -3,13 +3,15 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AwakeMovies Scraper API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: scrape
+    description: Movie and series scraping operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,119 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /scrape/sources:
+    get:
+      operationId: listScrapeSources
+      tags: [scrape]
+      summary: List scrape sources
+      description: Returns all supported scraper sources
+      responses:
+        "200":
+          description: List of scrape sources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScrapeSource"
+
+  /scrape/9jarocks:
+    post:
+      operationId: scrape9jarocks
+      tags: [scrape]
+      summary: Scrape 9jarocks
+      description: Scrape a movie or series from 9jarocks.com
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScrapeRequest"
+      responses:
+        "200":
+          description: Scrape result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScrapeResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Scrape failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /scrape/naijaprey:
+    post:
+      operationId: scrapeNaijaprey
+      tags: [scrape]
+      summary: Scrape NaijaPrey
+      description: Scrape a movie or series from naijaprey.tv
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScrapeRequest"
+      responses:
+        "200":
+          description: Scrape result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScrapeResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Scrape failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /scrape/nkiri-dramakey:
+    post:
+      operationId: scrapeNkiriDramakey
+      tags: [scrape]
+      summary: Scrape Nkiri / Dramakey
+      description: Scrape a movie or series from nkiri.com or dramakey.com
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScrapeNkiriRequest"
+      responses:
+        "200":
+          description: Scrape result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScrapeResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Scrape failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +149,135 @@ components:
       required:
         - status
 
+    ScrapeSource:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        needsSite:
+          type: boolean
+      required:
+        - id
+        - label
+        - needsSite
+
+    ScrapeRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL of the movie or series page to scrape
+        mode:
+          type: string
+          enum: [movie, series]
+          description: Whether to scrape as a movie or a series
+      required:
+        - url
+        - mode
+
+    ScrapeNkiriRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL of the movie or series page to scrape
+        mode:
+          type: string
+          enum: [movie, series]
+          description: Whether to scrape as a movie or a series
+        site:
+          type: string
+          enum: [nkiri, dramakey]
+          description: Which site variant to use (auto-detected from URL if omitted)
+      required:
+        - url
+        - mode
+
+    DownloadLink:
+      type: object
+      properties:
+        quality:
+          type: string
+        link:
+          type: string
+      required:
+        - quality
+        - link
+
+    Episode:
+      type: object
+      properties:
+        episode:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+      required:
+        - episode
+        - title
+        - url
+
+    ScrapeResult:
+      type: object
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+        _awpt_type:
+          type: string
+        _awpt_title:
+          type: string
+        _awpt_synopsis:
+          type: string
+        _awpt_poster:
+          type: string
+        _awpt_trailer_url:
+          type: string
+        _awpt_genre:
+          type: string
+        _awpt_stars:
+          type: string
+        _awpt_release_date:
+          type: string
+        _awpt_country:
+          type: string
+        _awpt_ratings:
+          type: string
+        _awpt_language:
+          type: string
+        _awpt_subtitles:
+          type: string
+        _awpt_source:
+          type: string
+        _awpt_duration:
+          type: string
+        _awpt_file_size:
+          type: string
+        _awpt_status:
+          type: string
+        _awpt_season:
+          type: string
+        _awpt_total_episodes:
+          type: string
+        _awpt_download_link:
+          type: array
+          items:
+            $ref: "#/components/schemas/DownloadLink"
+        _awpt_episodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Episode"
+        _awpt_additional_info:
+          type: object
+          additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
