@@ -13,11 +13,18 @@ import { runScrape } from "../lib/pythonRuntime";
 const router: IRouter = Router();
 
 // ─── URL allowlist validation ───────────────────────────────────────────────
-const ALLOWED_DOMAINS: Record<string, RegExp> = {
-  "9jarocks": /(?:^|\.)9jarocks\.com$/i,
-  "naijaprey": /(?:^|\.)naijaprey\.tv$/i,
-  "nkiri-dramakey": /(?:^|\.)(?:nkiri\.com|dramakey\.com)$/i,
+// Each source lists the allowed base domains (www. and bare both accepted).
+const ALLOWED_BASE_DOMAINS: Record<string, string[]> = {
+  "9jarocks": ["9jarocks.com"],
+  "naijaprey": ["naijaprey.tv"],
+  "nkiri-dramakey": ["nkiri.com", "dramakey.com"],
 };
+
+function isAllowedHostname(hostname: string, source: string): boolean {
+  const allowed = ALLOWED_BASE_DOMAINS[source] ?? [];
+  const h = hostname.toLowerCase();
+  return allowed.some((d) => h === d || h.endsWith("." + d));
+}
 
 function validateUrl(url: string, source: string): string | null {
   let parsed: URL;
@@ -29,9 +36,8 @@ function validateUrl(url: string, source: string): string | null {
   if (!["http:", "https:"].includes(parsed.protocol)) {
     return "URL must use http or https";
   }
-  const pattern = ALLOWED_DOMAINS[source];
-  if (pattern && !pattern.test(parsed.hostname)) {
-    return `URL hostname is not allowed for source '${source}'`;
+  if (!isAllowedHostname(parsed.hostname, source)) {
+    return `URL hostname '${parsed.hostname}' is not allowed for source '${source}'`;
   }
   return null;
 }
