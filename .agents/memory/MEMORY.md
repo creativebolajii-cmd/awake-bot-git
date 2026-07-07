@@ -1,0 +1,1 @@
+- [Render-Awake-Bot project audit](render-awake-bot-audit.md) — full code audit, 3 bugs found, deployment guide written; see file for details before touching any source.
