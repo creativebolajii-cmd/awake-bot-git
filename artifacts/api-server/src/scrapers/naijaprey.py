@@ -260,8 +260,13 @@ def _find_episodes(soup: BeautifulSoup, session: requests.Session, base_url: str
         if declared_match:
             declared_total = int(declared_match.group(1))
 
-        if re.search(r'\bcomplete\b|\bcompleted\b', full_text, re.IGNORECASE):
-            status = "Completed"
+        # Only trust an explicit "Status: Completed/Ongoing/Airing" label.
+        # A bare substring search for "complete" anywhere in the free-text
+        # entry (synopsis, related posts, ads, etc.) caused false positives
+        # — shows still airing were being marked "Completed".
+        status_match = re.search(r'Status\s*:?\s*(Ongoing|Completed?|Airing)', full_text, re.IGNORECASE)
+        if status_match:
+            status = Normalizer.normalize_status(status_match.group(1))
 
         for a in entry.find_all("a", href=True):
             text = a.get_text(strip=True)

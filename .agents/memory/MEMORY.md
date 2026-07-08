@@ -1,1 +1,2 @@
 - [Render-Awake-Bot project audit](render-awake-bot-audit.md) — full code audit, 3 bugs found, deployment guide written; see file for details before touching any source.
+- [Awake-Bot scraper status detection](awake-scraper-status-detection.md) — status must come from explicit "Status:" label, never a bare "complete" substring search.
