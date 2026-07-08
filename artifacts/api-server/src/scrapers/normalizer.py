@@ -13,8 +13,8 @@ class Normalizer:
     def normalize_title(title: str, mode: str = "series") -> str:
         """Normalize a scraped title.
 
-        mode="movie": keep "Title (Year)"; numbered sequels become "Title part N"
-        (year is dropped for sequels since the number already disambiguates).
+        mode="movie": year is always stripped (kept only in the separate year
+        metadata field); numbered sequels become "Title part N".
         mode="series": strip year/season/status suffixes entirely, leaving just
         the bare series title.
         """
@@ -54,10 +54,11 @@ class Normalizer:
         ).strip()
 
         if mode == "movie":
-            # Numbered sequel: "Enola Holmes 3 (2026)" -> "Enola Holmes part 3"
-            seq_match = re.match(
-                r'^(.*\S)\s+(\d{1,2})\s*(?:\((?:19|20)\d{2}\)\s*)?$', title
-            )
+            # Year is a separate metadata field — always strip it from the title,
+            # e.g. "Masters of the Universe (2026)" -> "Masters of the Universe".
+            title = re.sub(r'\s*\(\s*(?:19|20)\d{2}\s*\)', '', title).strip()
+            # Numbered sequel: "Enola Holmes 3" -> "Enola Holmes part 3"
+            seq_match = re.match(r'^(.*\S)\s+(\d{1,2})$', title)
             if seq_match:
                 base = seq_match.group(1).strip()
                 num = seq_match.group(2)
