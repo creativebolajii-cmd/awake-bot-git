@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AwakeMovies Scraper</title>
+
+  <!-- ── Stylesheet ─────────────────────────────────────────────────────── -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- ── Google Font: Inter (clean, modern sans-serif) ────────────────── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       HEADER — site name + supported sources
+  ══════════════════════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <!-- Film-reel icon (inline SVG, no dependency) -->
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+        <line x1="7" y1="2" x2="7" y2="22"/>
+        <line x1="17" y1="2" x2="17" y2="22"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <line x1="2" y1="7" x2="7" y2="7"/>
+        <line x1="17" y1="7" x2="22" y2="7"/>
+        <line x1="17" y1="17" x2="22" y2="17"/>
+        <line x1="2" y1="17" x2="7" y2="17"/>
+      </svg>
+
+      <div>
+        <h1 class="site-title">AwakeMovies Scraper</h1>
+        <p class="site-subtitle">
+          9jarocks &middot; NaijaPrey &middot; Nkiri &middot; Dramakey
+        </p>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- ── Search card ──────────────────────────────────────────────── -->
+    <section class="card search-card" aria-label="Scraper form">
+
+      <!-- URL input row -->
+      <div class="input-row">
+        <!-- Search icon inside input -->
+        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+
+        <input
+          id="url-input"
+          type="url"
+          class="url-input"
+          placeholder="Paste a movie or series URL…"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Movie or series URL"
+        />
+
+        <!-- Auto-detected source badge — shown by JS when URL is recognised -->
+        <span id="source-badge" class="source-badge" hidden aria-live="polite"></span>
+      </div>
+
+      <!-- Mode toggle: Movie vs Series -->
+      <div class="toggle-row" role="group" aria-label="Content mode">
+        <button id="btn-movie"  class="toggle-btn active" data-mode="movie"  type="button">
+          <!-- Clapperboard icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+            <polyline points="17 2 12 7 7 2"/>
+          </svg>
+          Movie
+        </button>
+        <button id="btn-series" class="toggle-btn" data-mode="series" type="button">
+          <!-- TV icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+            <polyline points="17 2 12 7 7 2"/>
+            <line x1="8" y1="22" x2="16" y2="22"/>
+          </svg>
+          Series
+        </button>
+      </div>
+
+      <!-- Site selector — only visible for Nkiri / Dramakey URLs -->
+      <div id="site-selector-row" class="site-selector-row" hidden>
+        <label class="site-label" for="site-select">Site variant</label>
+        <select id="site-select" class="site-select" aria-label="Site variant">
+          <option value="">Auto-detect</option>
+          <option value="nkiri">Nkiri</option>
+          <option value="dramakey">Dramakey</option>
+        </select>
+      </div>
+
+      <!-- Scrape submit button -->
+      <button id="scrape-btn" class="scrape-btn" type="button" disabled>
+        <!-- Spinner (shown while loading) -->
+        <svg id="btn-spinner" class="btn-spinner" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" aria-hidden="true" hidden>
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
+        </svg>
+        <span id="btn-label">Scrape</span>
+      </button>
+
+      <!-- Inline error message (below the button) -->
+      <p id="error-msg" class="error-msg" role="alert" hidden></p>
+    </section>
+
+
+    <!-- ── Result card — rendered by JS after a successful scrape ──── -->
+    <section id="result-section" class="card result-card" hidden aria-label="Scrape result">
+
+      <!-- Top row: poster + core metadata -->
+      <div class="result-top">
+
+        <!-- Poster image (hidden if no URL returned) -->
+        <div class="poster-wrap">
+          <img id="result-poster" class="result-poster" src="" alt="" hidden />
+          <!-- Fallback placeholder when no poster is available -->
+          <div id="poster-placeholder" class="poster-placeholder" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Title, badges, synopsis, metadata table -->
+        <div class="result-meta">
+          <h2 id="result-title" class="result-title"></h2>
+
+          <!-- Type & genre badges -->
+          <div id="result-badges" class="result-badges"></div>
+
+          <!-- Synopsis paragraph -->
+          <p id="result-synopsis" class="result-synopsis"></p>
+
+          <!-- Key/value table for ratings, runtime, language, etc. -->
+          <dl id="result-details" class="result-details"></dl>
+        </div>
+      </div>
+
+      <!-- Download links section -->
+      <div id="download-section" class="download-section" hidden>
+        <h3 class="section-heading">Download Links</h3>
+        <div id="download-links" class="download-links"></div>
+      </div>
+
+      <!-- Episodes section (series only) -->
+      <div id="episodes-section" class="episodes-section" hidden>
+        <h3 class="section-heading">Episodes</h3>
+        <ul id="episodes-list" class="episodes-list"></ul>
+      </div>
+
+      <!-- Raw JSON export -->
+      <div class="json-row">
+        <button id="copy-json-btn" class="secondary-btn" type="button">
+          Copy JSON
+        </button>
+        <button id="dl-json-btn" class="secondary-btn" type="button">
+          Download JSON
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <p>AwakeMovies Scraper &mdash; powered by the Render API</p>
+  </footer>
+
+
+  <!-- ── App logic ──────────────────────────────────────────────────── -->
+  <script src="app.js"></script>
+
+</body>
+</html>
